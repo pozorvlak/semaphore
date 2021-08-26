@@ -147,6 +147,31 @@ class Sync:
 
     def parse_args(self, args):
         parser = optparse.OptionParser()
+        parser.add_option(
+            "-d",
+            "--deterministic",
+            dest="roundrobin",
+            action="store_true",
+            default=False,
+            help="Run threads in round-robin order (default False)",
+        )
+        parser.add_option(
+            "-l",
+            "--loop",
+            dest="loop",
+            action="store_true",
+            default=False,
+            help="Run threads in an infinite loop (default False)",
+        )
+        parser.add_option(
+            "-v",
+            "--verbose",
+            dest="write",
+            action="store_true",
+            default=False,
+            help="Print debugging logs",
+        )
+
         (self.options, args) = parser.parse_args(args)
 
         if args:
@@ -179,18 +204,19 @@ class Sync:
         self.threads.remove(thread)
 
     def run(self):
-        """Runs the simulator with round-robin scheduling."""
-        self.run_helper(self.step)
+        """Runs the simulator."""
+        stepper = self.step if self.options.roundrobin else self.random_step
+        thread_stepper = self.step_thread_loop if self.options.loop else self.step_thread
+        self.run_helper(stepper, thread_stepper)
 
-    def random_run(self):
-        """Runs the simulator with random scheduling."""
-        self.run_helper(self.random_step)
-
-    def run_helper(self, step=None):
+    def run_helper(self, stepper, thread_stepper):
         """Runs the threads until someone clears self.running."""
         self.running = True
         while self.running:
-            step()
+            if not self.threads:
+                print("All threads finished, exiting")
+                exit()
+            stepper(thread_stepper)
             time.sleep(self.delay)
 
     def step_thread(self, thread):
@@ -199,36 +225,22 @@ class Sync:
             print(f"Thread {thread.name} finished")
             self.unregister(thread)
 
-    def step(self):
-        """Advances all the threads in order"""
-        for thread in self.threads:
-            self.step_thread(thread)
-
-    def step_loop(self):
-        """Advances all the threads in order"""
-        for thread in self.threads:
-            thread.step_loop()
-
-    def random_step(self):
-        """Advances one random thread."""
-        if not self.threads:
-            print("All threads finished, exiting")
-            exit()
-        threads = [thread for thread in self.threads if not thread.queued]
-        if not threads:
-            print("There are currently no threads that can run.")
-            return
-        thread = random.choice(threads)
-        self.step_thread(thread)
-
-    def random_step_loop(self):
-        """Advances one random thread."""
-        threads = [thread for thread in self.threads if not thread.queued]
-        if not threads:
-            print("There are currently no threads that can run.")
-            return
-        thread = random.choice(threads)
+    def step_thread_loop(self, thread):
         thread.step_loop()
+
+    def step(self, thread_stepper):
+        """Advances all the threads in order"""
+        for thread in self.threads:
+            thread_stepper(thread)
+
+    def random_step(self, thread_stepper):
+        """Advances one random thread."""
+        threads = [thread for thread in self.threads if not thread.queued]
+        if not threads:
+            print("There are currently no threads that can run.")
+            return
+        thread = random.choice(threads)
+        thread_stepper(thread)
 
     def stop(self):
         """Stops running."""
@@ -566,7 +578,7 @@ class Thread:
 
 def main():
     sync = Sync(sys.argv[1:])
-    sync.random_run()
+    sync.run()
 
 
 if __name__ == "__main__":

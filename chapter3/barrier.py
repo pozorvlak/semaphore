@@ -76,3 +76,4 @@ thread_finished.wait()
 if finished_count == n:
     print("All threads have finished!")
     exit()
+balk()
