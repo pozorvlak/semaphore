@@ -346,7 +346,7 @@ class Thread:
     def next_loop(self):
         """Moves to the next row, looping to the top if necessary."""
         self.next_row()
-        if self.iptr >= len(self.instructions):
+        if self.finished:
             self.start()
 
     def next_row(self):
@@ -376,7 +376,7 @@ class Thread:
 
         while True:
             self.next_row()
-            if self.iptr >= len(self.instructions):
+            if self.finished:
                 break
 
             source = self.instructions[self.iptr]
@@ -407,7 +407,7 @@ class Thread:
         if self.queued:
             return None
 
-        if self.iptr >= len(self.instructions):
+        if self.finished:
             return None
 
         self.check_end_while()
@@ -525,15 +525,19 @@ class Thread:
             self.while_stack.pop()
             self.jump_to(row)
 
+    @property
+    def finished(self):
+        return self.iptr >= len(self.instructions)
+
     def step_loop(self, event=None):
         self.step()
-        if self.iptr >= len(self.instructions):
+        if self.finished:
             self.start()
 
     def run(self):
         while True:
             self.step()
-            if self.iptr >= len(self.instructions):
+            if self.finished:
                 break
 
 
