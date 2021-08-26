@@ -3,42 +3,12 @@ count = 0
 mutex = Semaphore(1)
 barrier = Semaphore(0)
 
-## Thread 1
-print("Thread 1 at rendezvous")
+## Thread A * 4
+print("Thread " + pid() + " at rendezvous")
 mutex.wait()
 count = count + 1
 mutex.signal()
 if count == n : barrier.signal()
 barrier.wait()
 barrier.signal()
-print("Thread 1 finished!")
-
-## Thread 2
-print("Thread 2 at rendezvous")
-mutex.wait()
-count = count + 1
-mutex.signal()
-if count == n : barrier.signal()
-barrier.wait()
-barrier.signal()
-print("Thread 2 finished!")
-
-## Thread 3
-print("Thread 3 at rendezvous")
-mutex.wait()
-count = count + 1
-mutex.signal()
-if count == n : barrier.signal()
-barrier.wait()
-barrier.signal()
-print("Thread 3 finished!")
-
-## Thread 4
-print("Thread 4 at rendezvous")
-mutex.wait()
-count = count + 1
-mutex.signal()
-if count == n : barrier.signal()
-barrier.wait()
-barrier.signal()
-print("Thread 4 finished!")
+print("Thread " + pid() + " finished!")

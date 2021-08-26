@@ -11,6 +11,7 @@ import optparse
 import os
 import copy
 import random
+import re
 import sys
 import string
 import time
@@ -127,6 +128,8 @@ if major == 2:
 else:
     all_thread_names = string.ascii_uppercase + string.ascii_lowercase
 
+
+START_NEW_LINE = re.compile("##\s*thread\s+(.*?)(?:\s*\*\s*(\d+))?\s*$", re.I)
 
 class Sync:
     """Represents the thread simulator."""
@@ -253,42 +256,41 @@ class Sync:
     def read_file(self, filename):
         """Read a file that contains code for the simulator to execute.
 
-        Lines that start with ## do not appear
-        in the display.
+        Lines that start with ## do not appear in the display.
 
-        A line that starts with "## thread" indicates the beginning of
-        a new column of code.
-
-        Returns a list of blocks where each block is a list of lines.
+        Start a new thread with a line of the form "## Thread NAME [* COUNT]".
+        Anything before the first such line is common initialisation code.
         """
 
-        def is_new_thread(line):
-            if line[0:2] != "##":
-                return False
-
-            words = line.strip("#").split()
-            word = words[0].lower()
-            if word == "thread":
-                return " ".join(words[1:]) or len(self.threads)
-            return False
 
         block = []
         name = "init"
+        thread_count = 1
 
         fp = open(filename)
         for line in fp:
             line = line.rstrip()
 
-            new_thread = is_new_thread(line)
-            if new_thread:
-                self.register(Thread(self, block, name))
+            m = START_NEW_LINE.match(line)
+            if m:
+                self.create_threads(block, name, thread_count)
                 block = []
-                name = new_thread
+                name = m.group(1)
+                thread_count = int(m.group(2) or 1)
             else:
                 block.append(line)
 
-        self.register(Thread(self, block, name))
+        self.create_threads(block, name, thread_count)
         fp.close()
+
+    def create_threads(self, block, name, thread_count):
+        if self.options.verbose:
+            print(f"Creating {thread_count} copies of thread {name}")
+        if thread_count > 1:
+            for i in range(thread_count):
+                self.register(Thread(self, block, f"{name}-{i}"))
+        else:
+            self.register(Thread(self, block, name))
 
     def run_init(self):
         """Runs the initialization code in the top column."""
