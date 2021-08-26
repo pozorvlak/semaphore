@@ -166,7 +166,7 @@ class Sync:
         parser.add_option(
             "-v",
             "--verbose",
-            dest="write",
+            dest="verbose",
             action="store_true",
             default=False,
             help="Print debugging logs",
@@ -195,12 +195,14 @@ class Sync:
 
     def register(self, thread):
         """Adds a new thread."""
-        print(f"Registering thread {thread.name}")
+        if self.options.verbose:
+            print(f"Registering thread {thread.name}")
         self.threads.append(thread)
 
     def unregister(self, thread):
         """Removes a thread."""
-        print(f"Removing thread {thread.name}")
+        if self.options.verbose:
+            print(f"Removing thread {thread.name}")
         self.threads.remove(thread)
 
     def run(self):
@@ -214,7 +216,8 @@ class Sync:
         self.running = True
         while self.running:
             if not self.threads:
-                print("All threads finished, exiting")
+                if self.options.verbose:
+                    print("All threads finished, exiting")
                 exit()
             stepper(thread_stepper)
             time.sleep(self.delay)
@@ -222,7 +225,8 @@ class Sync:
     def step_thread(self, thread):
         thread.step()
         if thread.finished:
-            print(f"Thread {thread.name} finished")
+            if self.options.verbose:
+                print(f"Thread {thread.name} finished")
             self.unregister(thread)
 
     def step_thread_loop(self, thread):
@@ -289,7 +293,8 @@ class Sync:
     def run_init(self):
         """Runs the initialization code in the top column."""
 
-        print("running init")
+        if self.options.verbose:
+            print("running init")
 
         thread = self.threads[0]
         thread.run()
