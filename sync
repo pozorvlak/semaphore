@@ -144,7 +144,7 @@ class Sync:
         self.w = self
         self.threads = []
         self.running = False
-        self.delay = 0.2
+        self.delay = self.options.delay
         self.setup()
         self.run_init()
 
@@ -173,6 +173,14 @@ class Sync:
             action="store_true",
             default=False,
             help="Print debugging logs",
+        )
+        parser.add_option(
+            "--delay",
+            dest="delay",
+            action="store",
+            type="float",
+            default= 0.2,
+            help="Time to delay between steps",
         )
 
         (self.options, args) = parser.parse_args(args)
