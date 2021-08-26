@@ -193,12 +193,35 @@ class Sync:
             step()
             time.sleep(self.delay)
 
+    def step_thread(self, thread):
+        thread.step()
+        if thread.finished:
+            print(f"Thread {thread.name} finished")
+            self.unregister(thread)
+
     def step(self):
+        """Advances all the threads in order"""
+        for thread in self.threads:
+            self.step_thread(thread)
+
+    def step_loop(self):
         """Advances all the threads in order"""
         for thread in self.threads:
             thread.step_loop()
 
     def random_step(self):
+        """Advances one random thread."""
+        if not self.threads:
+            print("All threads finished, exiting")
+            exit()
+        threads = [thread for thread in self.threads if not thread.queued]
+        if not threads:
+            print("There are currently no threads that can run.")
+            return
+        thread = random.choice(threads)
+        self.step_thread(thread)
+
+    def random_step_loop(self):
         """Advances one random thread."""
         threads = [thread for thread in self.threads if not thread.queued]
         if not threads:
