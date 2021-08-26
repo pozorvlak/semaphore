@@ -10,8 +10,8 @@ laps = {'A-' + str(i): 0 for i in range(n)}
 laps[pid()] += 1
 mutex.wait()
     count = count + 1
-    if count == n: turnstile1.signal()
     if count == n: turnstile2.wait()
+    if count == n: turnstile1.signal()
 mutex.signal()
 turnstile1.wait()
 turnstile1.signal()
