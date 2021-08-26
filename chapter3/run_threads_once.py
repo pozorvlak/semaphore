@@ -24,5 +24,5 @@ thread_finished.wait()
 ## Thread killer
 finished.wait()
 print("All threads have finished!")
-# exit()
+exit()
 thread_finished.wait()
