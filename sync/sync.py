@@ -7,6 +7,7 @@ Copyright 2011 Allen B. Downey
 Distributed under the GNU General Public License at gnu.org/licenses/gpl.html.
 """
 
+from dataclasses import dataclass
 import os
 import copy
 import random
@@ -160,6 +161,15 @@ else:
 
 START_NEW_LINE = re.compile("##\s*thread\s+(.*?)(?:\s*\*\s*(\d+))?\s*$", re.I)
 
+@dataclass
+class Options:
+    delay: float = 0.2
+    max_steps: int = None
+    roundrobin: bool = False
+    verbose: bool = False
+    loop: bool = False
+
+
 class Sync:
     """Represents the thread simulator."""
 
@@ -216,7 +226,7 @@ class Sync:
             if not self.threads:
                 if self.options.verbose:
                     print("All threads finished, exiting")
-                exit()
+                self.running = False
             stepper(thread_stepper)
             time.sleep(self.delay)
             step_count += 1
