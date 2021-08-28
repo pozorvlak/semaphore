@@ -299,9 +299,9 @@ class Sync:
             print(f"Creating {thread_count} copies of thread {name}")
         if thread_count > 1:
             for i in range(thread_count):
-                self.register(Thread(self, block, f"{name}-{i}"))
+                self.register(Thread(self, block, f"{name}-{i}", self.options.loop))
         else:
-            self.register(Thread(self, block, name))
+            self.register(Thread(self, block, name, self.options.loop))
 
     def run_init(self):
         """Runs the initialization code in the top column."""
@@ -364,10 +364,11 @@ class Namespace:
 class Thread:
     """Represents simulated threads."""
 
-    def __init__(self, sync, instructions, name):
+    def __init__(self, sync, instructions, name, looping):
         self.sync = sync
         self.instructions = instructions
         self.name = name
+        self.looping = looping
         self.namespace = Namespace()
         self.flag_map = {}
         self.while_stack = []
@@ -399,7 +400,7 @@ class Thread:
     def next_loop(self):
         """Moves to the next row, looping to the top if necessary."""
         self.next_row()
-        if self.finished:
+        if self.finished and self.looping:
             self.start()
 
     def next_row(self):
