@@ -10,7 +10,7 @@ def dance(me, other, partners):
     partners[me] = other
     if other in partners:
         assert partners[other] == me, f"{other} is already taken"
-    print(me + " is dancing with " + other)
+    print(f"{me} is dancing with {other}")
 
 ## Thread leader * 2
 mutex.wait()
