@@ -619,12 +619,3 @@ class Thread:
             self.step()
             if self.finished:
                 break
-
-
-def main():
-    sync = Sync(sys.argv[1:])
-    sync.run()
-
-
-if __name__ == "__main__":
-    main()

@@ -1,0 +1,11 @@
+import sys
+from sync import Sync
+
+
+def main():
+    sync = Sync(sys.argv[1:])
+    sync.run()
+
+
+if __name__ == "__main__":
+    main()

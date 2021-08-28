@@ -1,0 +1,4 @@
+-e sync
+swampy==3.0.1
+pytest
+hypothesis
