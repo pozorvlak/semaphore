@@ -227,7 +227,7 @@ class Sync:
             if not self.threads:
                 if self.options.verbose:
                     print("All threads finished, exiting")
-                self.running = False
+                return
             stepper(thread_stepper)
             time.sleep(self.delay)
             step_count += 1
