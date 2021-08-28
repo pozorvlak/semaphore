@@ -2,8 +2,7 @@ leaders = followers = 0
 mutex = Semaphore(1)
 leaderQueue = Semaphore(0)
 followerQueue = Semaphore(0)
-# barrier = Barrier(2)
-rendezvous = Semaphore(0)
+barrier = Barrier(2)
 dancers = {}
 def dance(me, position, dancers):
     assert position not in dancers
@@ -20,11 +19,10 @@ mutex.wait()
         leaders += 1
         mutex.signal()
         leaderQueue.wait()
-    # dance(pid(), 'leader', dancers)
-    # barrier.phase1()
-    # del dancers['leader']
-    # barrier.phase2()
-    rendezvous.wait()
+    dance(pid(), 'leader', dancers)
+    barrier.phase1()
+    del dancers['leader']
+    barrier.phase2()
 mutex.signal()
 
 ## Thread follower * 2
@@ -36,8 +34,7 @@ mutex.wait()
         followers += 1
         mutex.signal()
         followerQueue.wait()
-    # dance(pid(), 'follower', dancers)
-    # barrier.phase1()
-    # del dancers['follower']
-    # barrier.phase2()
-    rendezvous.signal()
+    dance(pid(), 'follower', dancers)
+    barrier.phase1()
+    del dancers['follower']
+    barrier.phase2()
