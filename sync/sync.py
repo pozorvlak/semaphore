@@ -159,7 +159,7 @@ else:
     all_thread_names = string.ascii_uppercase + string.ascii_lowercase
 
 
-START_NEW_LINE = re.compile("##\s*thread\s+(.*?)(?:\s*\*\s*(\d+))?\s*$", re.I)
+START_NEW_LINE = re.compile(r'##\s*thread\s+(.*?)(?:\s*\*\s*(\d+))?\s*$', re.I)
 
 @dataclass
 class Options:
