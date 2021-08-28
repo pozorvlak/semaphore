@@ -4,6 +4,12 @@ leader_present = Semaphore(0)
 follower_present = Semaphore(0)
 first_leader = None
 first_follower = None
+partners = {}
+def dance(me, other, partners):
+    partners[me] = other
+    if other in partners:
+        assert partners[other] == me, f"{other} is already taken"
+    print(me + " is dancing with " + other)
 
 ## Thread leader * 10
 leader_mutex.wait()
@@ -11,7 +17,7 @@ leader_mutex.wait()
     leader_present.signal()
 leader_mutex.signal()
 follower_present.wait()
-print(pid() + " is dancing with the lovely " + first_follower)
+dance(pid(), first_follower, partners)
 
 ## Thread follower * 10
 follower_mutex.wait()
@@ -19,4 +25,4 @@ follower_mutex.wait()
     follower_present.signal()
 follower_mutex.signal()
 leader_present.wait()
-print(pid() + " is dancing with the handsome " + first_leader)
+dance(pid(), first_leader, partners)
