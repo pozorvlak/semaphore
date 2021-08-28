@@ -407,15 +407,20 @@ class Thread:
         self.iptr = self.iptr + 1
 
     def skip_body(self):
-        """Skips the body of a conditional."""
+        """Skips an indented block."""
         # get the current line
         # get the next line
         # compute the change in indent
         # find the outdent
+        if self.finished:
+            return []
         source = self.instructions[self.iptr]
+        lines = [source]
         head_indent = self.count_spaces(source)
 
         self.next_row()
+        if self.finished:
+            return lines
         source = self.instructions[self.iptr]
         body_indent = self.count_spaces(source)
 
@@ -425,6 +430,7 @@ class Thread:
             raise SyntaxError("Body of compound statement must be indented.")
 
         while True:
+            lines.append(source)
             self.next_row()
             if self.finished:
                 break
@@ -433,6 +439,7 @@ class Thread:
             line_indent = self.count_spaces(source)
             if line_indent <= head_indent:
                 break
+        return "\n".join(lines) + "\n"
 
     def count_spaces(self, source):
         """Returns the number of leading spaces after expanding tabs."""
@@ -471,6 +478,8 @@ class Thread:
         # see if any variables were defined or changed
         after = self.sync.locals
         defined, changed = diff_dict(after, before)
+        if self.sync.options.verbose and (defined or changed):
+            print(f"{defined} defined, {changed} changed")
 
         # either skip to the next line or to the end of a false conditional
         if flag:
@@ -507,6 +516,8 @@ class Thread:
             if keyword in ["if", "else:", "while"]:
                 flag = self.handle_conditional(keyword, source, sync)
                 return flag
+            elif keyword == "def":
+                self.handle_def(sync)
             else:
                 raise error
 
@@ -559,6 +570,10 @@ class Thread:
                 return not flag
             except KeyError:
                 raise SyntaxError("else does not match if")
+
+    def handle_def(self, sync):
+        definition = self.skip_body()
+        exec(definition, sync.globals, sync.locals)
 
     def check_end_while(self):
         """Check if we are at the end of a while loop.
