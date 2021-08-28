@@ -7,7 +7,6 @@ Copyright 2011 Allen B. Downey
 Distributed under the GNU General Public License at gnu.org/licenses/gpl.html.
 """
 
-import optparse
 import os
 import copy
 import random
@@ -164,61 +163,17 @@ START_NEW_LINE = re.compile("##\s*thread\s+(.*?)(?:\s*\*\s*(\d+))?\s*$", re.I)
 class Sync:
     """Represents the thread simulator."""
 
-    def __init__(self, args=[""]):
-        self.parse_args(args)
-
+    def __init__(self, options, filename):
+        self.options = options
+        self.filename = filename
         self.locals = sim_locals
         self.globals = sim_globals
 
-        self.views = {}
-        self.w = self
         self.threads = []
         self.running = False
         self.delay = self.options.delay
         self.setup()
         self.run_init()
-
-    def parse_args(self, args):
-        parser = optparse.OptionParser()
-        parser.add_option(
-            "-d",
-            "--deterministic",
-            dest="roundrobin",
-            action="store_true",
-            default=False,
-            help="Run threads in round-robin order (default False)",
-        )
-        parser.add_option(
-            "-l",
-            "--loop",
-            dest="loop",
-            action="store_true",
-            default=False,
-            help="Run threads in an infinite loop (default False)",
-        )
-        parser.add_option(
-            "-v",
-            "--verbose",
-            dest="verbose",
-            action="store_true",
-            default=False,
-            help="Print debugging logs",
-        )
-        parser.add_option(
-            "--delay",
-            dest="delay",
-            action="store",
-            type="float",
-            default= 0.2,
-            help="Time to delay between steps",
-        )
-
-        (self.options, args) = parser.parse_args(args)
-
-        if args:
-            self.filename = args[0]
-        else:
-            self.filename = ""
 
     def get_threads(self):
         return self.threads
@@ -299,8 +254,6 @@ class Sync:
         Start a new thread with a line of the form "## Thread NAME [* COUNT]".
         Anything before the first such line is common initialisation code.
         """
-
-
         block = []
         name = "init"
         thread_count = 1

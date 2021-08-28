@@ -1,9 +1,59 @@
+#!/usr/bin/env python
+
+import optparse
 import sys
+
 from sync import Sync
 
 
+def parse_args(args):
+    parser = optparse.OptionParser()
+    parser.add_option(
+        "-d",
+        "--deterministic",
+        dest="roundrobin",
+        action="store_true",
+        default=False,
+        help="Run threads in round-robin order (default False)",
+    )
+    parser.add_option(
+        "-l",
+        "--loop",
+        dest="loop",
+        action="store_true",
+        default=False,
+        help="Run threads in an infinite loop (default False)",
+    )
+    parser.add_option(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="store_true",
+        default=False,
+        help="Print debugging logs",
+    )
+    parser.add_option(
+        "--delay",
+        dest="delay",
+        action="store",
+        type="float",
+        default= 0.2,
+        help="Time to delay between steps",
+    )
+
+    (options, args) = parser.parse_args(args)
+
+    if args:
+        filename = args[0]
+    else:
+        filename = ""
+
+    return options, filename
+
+
 def main():
-    sync = Sync(sys.argv[1:])
+    options, filename = parse_args(sys.argv[1:])
+    sync = Sync(options, filename)
     sync.run()
 
 
