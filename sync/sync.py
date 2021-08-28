@@ -172,6 +172,7 @@ class Sync:
         self.threads = []
         self.running = False
         self.delay = self.options.delay
+        self.max_steps = self.options.max_steps
         self.setup()
         self.run_init()
 
@@ -210,6 +211,7 @@ class Sync:
     def run_helper(self, stepper, thread_stepper):
         """Runs the threads until someone clears self.running."""
         self.running = True
+        step_count = 0
         while self.running:
             if not self.threads:
                 if self.options.verbose:
@@ -217,6 +219,11 @@ class Sync:
                 exit()
             stepper(thread_stepper)
             time.sleep(self.delay)
+            step_count += 1
+            if self.max_steps is not None and step_count >= self.max_steps:
+                if self.options.verbose:
+                    print("Reached max_steps, exiting")
+                self.running = False
 
     def step_thread(self, thread):
         thread.step()
