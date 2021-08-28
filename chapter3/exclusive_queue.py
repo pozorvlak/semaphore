@@ -1,7 +1,8 @@
-leader_mutex = Semaphore(1)
-follower_mutex = Semaphore(1)
-leader_present = Semaphore(0)
-follower_present = Semaphore(0)
+leaders = followers = 0
+mutex = Semaphore(1)
+leaderQueue = Semaphore(0)
+followerQueue = Semaphore(0)
+rendezvous = Semaphore(0)
 first_leader = None
 first_follower = None
 partners = {}
@@ -12,17 +13,27 @@ def dance(me, other, partners):
     print(me + " is dancing with " + other)
 
 ## Thread leader * 2
-leader_mutex.wait()
+mutex.wait()
+    leaders += 1
+    leaderQueue.signal()
     first_leader = pid()
-    leader_present.signal()
-leader_mutex.signal()
-follower_present.wait()
+mutex.signal()
+followerQueue.wait()
 dance(pid(), first_follower, partners)
+mutex.wait()
+    leaders -= 1
+mutex.signal()
+rendezvous.wait()
 
 ## Thread follower * 2
-follower_mutex.wait()
+mutex.wait()
+    followers += 1
+    followerQueue.signal()
     first_follower = pid()
-    follower_present.signal()
-follower_mutex.signal()
-leader_present.wait()
-dance(pid(), first_leader, partners)
+mutex.signal()
+leaderQueue.wait()
+# dance(pid(), first_leader, partners)
+mutex.wait()
+    followers -= 1
+mutex.signal()
+rendezvous.wait()
