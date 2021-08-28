@@ -2,38 +2,42 @@ leaders = followers = 0
 mutex = Semaphore(1)
 leaderQueue = Semaphore(0)
 followerQueue = Semaphore(0)
+# barrier = Barrier(2)
 rendezvous = Semaphore(0)
-first_leader = None
-first_follower = None
-partners = {}
-def dance(me, other, partners):
-    partners[me] = other
-    if other in partners:
-        assert partners[other] == me, f"{other} is already taken"
-    print(f"{me} is dancing with {other}")
+dancers = {}
+def dance(me, position, dancers):
+    assert position not in dancers
+    dancers[position] = me
+    if 'leader' in dancers and 'follower' in dancers:
+        print(f"The handsome {dancers['leader']} is dancing with the lovely {dancers['follower']}")
 
 ## Thread leader * 2
 mutex.wait()
-    leaders += 1
-    leaderQueue.signal()
-    first_leader = pid()
+    if followers > 0:
+        followers -= 1
+        followerQueue.signal()
+    else:
+        leaders += 1
+        mutex.signal()
+        leaderQueue.wait()
+    # dance(pid(), 'leader', dancers)
+    # barrier.phase1()
+    # del dancers['leader']
+    # barrier.phase2()
+    rendezvous.wait()
 mutex.signal()
-followerQueue.wait()
-dance(pid(), first_follower, partners)
-mutex.wait()
-    leaders -= 1
-mutex.signal()
-rendezvous.wait()
 
 ## Thread follower * 2
 mutex.wait()
-    followers += 1
-    followerQueue.signal()
-    first_follower = pid()
-mutex.signal()
-leaderQueue.wait()
-# dance(pid(), first_leader, partners)
-mutex.wait()
-    followers -= 1
-mutex.signal()
-rendezvous.wait()
+    if leaders > 0:
+        leaders -= 1
+        leaderQueue.signal()
+    else:
+        followers += 1
+        mutex.signal()
+        followerQueue.wait()
+    # dance(pid(), 'follower', dancers)
+    # barrier.phase1()
+    # del dancers['follower']
+    # barrier.phase2()
+    rendezvous.signal()
