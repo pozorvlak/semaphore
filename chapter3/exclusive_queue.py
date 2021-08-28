@@ -11,7 +11,7 @@ def dance(me, other, partners):
         assert partners[other] == me, f"{other} is already taken"
     print(me + " is dancing with " + other)
 
-## Thread leader * 10
+## Thread leader * 2
 leader_mutex.wait()
     first_leader = pid()
     leader_present.signal()
@@ -19,7 +19,7 @@ leader_mutex.signal()
 follower_present.wait()
 dance(pid(), first_follower, partners)
 
-## Thread follower * 10
+## Thread follower * 2
 follower_mutex.wait()
     first_follower = pid()
     follower_present.signal()
