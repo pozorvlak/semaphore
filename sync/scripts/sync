@@ -49,6 +49,14 @@ def parse_args(args):
         default=None,
         help="Stop after this many steps",
     )
+    parser.add_option(
+        "-n",
+        "--no-deadlocks",
+        dest="no_deadlocks",
+        action="store_true",
+        default=False,
+        help="Fail if all threads are deadlocked",
+    )
 
     (options, args) = parser.parse_args(args)
 

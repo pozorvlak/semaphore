@@ -168,6 +168,7 @@ class Options:
     roundrobin: bool = False
     verbose: bool = False
     loop: bool = False
+    no_deadlocks: bool = True
 
 
 class Sync:
@@ -255,6 +256,8 @@ class Sync:
         threads = [thread for thread in self.threads if not thread.queued]
         if not threads:
             print("There are currently no threads that can run.")
+            if self.options.no_deadlocks:
+                assert False, "Threads are deadlocked - failing"
             return
         thread = random.choice(threads)
         thread_stepper(thread)
