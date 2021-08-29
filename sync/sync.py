@@ -453,14 +453,10 @@ class Thread:
 
             source = self.instructions[self.iptr]
             if source == "":
-                print(f"Skipping blank line {self.iptr}")
                 continue
             line_indent = self.count_spaces(source)
             if line_indent <= head_indent:
-                print(f"Breaking on line {self.iptr}")
                 break
-        print(lines)
-        print(f"Iptr now {self.iptr}: {'finished' if self.finished else self.instructions[self.iptr]}")
         return lines
 
     def count_spaces(self, source):
@@ -489,7 +485,6 @@ class Thread:
         if self.finished:
             return None
 
-        print("Pre check_end_while", self)
         self.check_end_while()
         source = self.instructions[self.iptr]
         print(self, source)
