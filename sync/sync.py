@@ -381,10 +381,9 @@ class Thread:
 
     @iptr.setter
     def iptr(self, value):
-        print(f"Setting {self} iptr to {value}")
         self._iptr = value
 
-    def __str__(self):
+    def __repr__(self):
         return f"<{self.name} {self.iptr}>"
 
     def enqueue(self):
