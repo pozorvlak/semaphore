@@ -490,6 +490,7 @@ class Thread:
         print(self, source)
 
         before = copy.copy(self.sync.locals)
+        before_ns = copy.copy(self.namespace.__dict__)
 
         flag = self.exec_line(source, self.sync)
 
@@ -498,6 +499,9 @@ class Thread:
         defined, changed = diff_dict(after, before)
         if self.sync.options.verbose and (defined or changed):
             print(f"{defined} defined, {changed} changed")
+        defined, changed = diff_dict(self.namespace.__dict__, before_ns)
+        if self.sync.options.verbose and (defined or changed):
+            print(f"{self} thread-locals {defined} defined, {changed} changed")
 
         # either skip to the next line or to the end of a false conditional
         if flag:
