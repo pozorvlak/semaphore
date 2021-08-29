@@ -432,12 +432,15 @@ class Thread:
         lines = [source]
         head_indent = self.count_spaces(source)
 
-        self.next_row()
-        if self.finished:
-            return lines
-        source = self.instructions[self.iptr]
-        body_indent = self.count_spaces(source)
+        while True:
+            self.next_row()
+            if self.finished:
+                return lines
+            source = self.instructions[self.iptr]
+            if source != "":
+                break
 
+        body_indent = self.count_spaces(source)
         indent = body_indent - head_indent
 
         if indent <= 0:
@@ -450,10 +453,16 @@ class Thread:
                 break
 
             source = self.instructions[self.iptr]
+            if source == "":
+                print(f"Skipping blank line {self.iptr}")
+                continue
             line_indent = self.count_spaces(source)
             if line_indent <= head_indent:
+                print(f"Breaking on line {self.iptr}")
                 break
-        return "\n".join(lines) + "\n"
+        print(lines)
+        print(f"Iptr now {self.iptr}: {'finished' if self.finished else self.instructions[self.iptr]}")
+        return lines
 
     def count_spaces(self, source):
         """Returns the number of leading spaces after expanding tabs."""
@@ -481,6 +490,7 @@ class Thread:
         if self.finished:
             return None
 
+        print("Pre check_end_while", self)
         self.check_end_while()
         source = self.instructions[self.iptr]
         print(self, source)
@@ -530,8 +540,9 @@ class Thread:
             if keyword in ["if", "else:", "while"]:
                 flag = self.handle_conditional(keyword, source, sync)
                 return flag
-            elif keyword == "def":
+            elif keyword in ["def", "class"]:
                 self.handle_def(sync)
+                return False
             else:
                 raise error
 
@@ -586,8 +597,10 @@ class Thread:
                 raise SyntaxError("else does not match if")
 
     def handle_def(self, sync):
-        definition = self.skip_body()
+        head_line = self.iptr
+        definition = "\n".join(self.skip_body()) + "\n"
         exec(definition, sync.globals, sync.locals)
+        self.iptr = head_line
 
     def check_end_while(self):
         """Check if we are at the end of a while loop.
