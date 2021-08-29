@@ -372,7 +372,17 @@ class Thread:
         self.namespace = Namespace()
         self.flag_map = {}
         self.while_stack = []
+        self._iptr = 0
         self.start()
+
+    @property
+    def iptr(self):
+        return self._iptr
+
+    @iptr.setter
+    def iptr(self, value):
+        print(f"Setting {self} iptr to {value}")
+        self._iptr = value
 
     def __str__(self):
         return f"<{self.name} {self.iptr}>"
