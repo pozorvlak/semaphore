@@ -399,7 +399,7 @@ class Thread:
         self.iptr = row
 
     def balk(self):
-        self.iptr = 0
+        self.iptr = -1  # next_row is called after execution, making the iptr 0
 
     def start(self):
         """Moves this thread to the top of the column."""
