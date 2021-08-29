@@ -1,7 +1,7 @@
 Solutions to the exercises from _The Little Book of Semaphores_ by Allen Downey.
 
-Also includes a hacked up version of Downey's simulator Sync, with the
-following changes:
+Also includes a hacked up version of Downey's simulator
+[Sync](https://github.com/AllenDowney/Swampy), with the following changes:
 
  - The GUI is gone: it's intended to be run either on the command line or
    controlled by another program.
