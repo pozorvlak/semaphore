@@ -10,6 +10,7 @@ import sync
     "producer_consumer.py",
     "producer_consumer_finite_buffer.py",
     "reader_writer.py",
+    "reader_writer_no_starvation.py",
 ])
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(random=st.random_module())
