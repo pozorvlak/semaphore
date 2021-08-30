@@ -7,6 +7,7 @@ Copyright 2011 Allen B. Downey
 Distributed under the GNU General Public License at gnu.org/licenses/gpl.html.
 """
 
+from collections import ChainMap
 from dataclasses import dataclass
 import os
 import copy
@@ -178,7 +179,7 @@ class Sync:
         self.options = options
         self.filename = filename
         self.locals = sim_locals
-        self.globals = sim_globals
+        self._globals = sim_globals
 
         self.threads = []
         self.running = False
@@ -187,14 +188,23 @@ class Sync:
         self.setup()
         self.run_init()
 
+    @property
+    def variables(self):
+        # The behaviour of `eval`/`exec` in Python 3 is totally weird:
+        # https://bugs.python.org/issue37646
+        # Variables passed in `locals` are visible to top-level scopes,
+        # but invisible in nested scopes (function/class definitions,
+        # comprehensions). To allow, e.g., functions which can update or check
+        # global buffers, we use this egregious hack: pass *all* variables in
+        # as globals. However, *updates* to variables in `exec` calls are
+        # applied to the `locals` mapping, so we must retain `self.locals`.
+        #
+        # Also, `eval`/`exec` will accept a ChainMap of locals, but not
+        # globals. So we must cast this to a dict. Screw you, Python 3.
+        return dict(ChainMap(self._globals, self.locals))
+
     def get_threads(self):
         return self.threads
-
-    def set_global(self, **kwds):
-        self.globals.update(kwds)
-
-    def get_global(self, attr):
-        return self.globals[attr]
 
     def setup(self):
         """Reads in the code."""
@@ -525,12 +535,12 @@ class Thread:
         global current_thread
         current_thread = self
 
-        sync.globals["self"] = self.namespace
+        sync.locals["self"] = self.namespace
 
         try:
             s = source.strip()
             code = compile(s, "<user-provided code>", "exec")
-            exec(code, sync.globals, sync.locals)
+            exec(code, sync.variables, sync.locals)
             return True
         except SyntaxError as error:
             # check whether it's a conditional statement
@@ -564,7 +574,7 @@ class Thread:
             # evaluate the condition
             n = len(keyword)
             condition = s[n:-1].strip()
-            flag = eval(condition, sync.globals, sync.locals)
+            flag = eval(condition, sync.variables, sync.locals)
 
             # store the flag
             indent = self.count_spaces(source)
@@ -576,7 +586,7 @@ class Thread:
             # evaluate the condition
             n = len(keyword)
             condition = s[n:-1].strip()
-            flag = eval(condition, sync.globals, sync.locals)
+            flag = eval(condition, sync.variables, sync.locals)
 
             if flag:
                 indent = self.count_spaces(source)
@@ -597,7 +607,7 @@ class Thread:
     def handle_def(self, sync):
         head_line = self.iptr
         definition = "\n".join(self.skip_body()) + "\n"
-        exec(definition, sync.globals, sync.locals)
+        exec(definition, sync.variables, sync.locals)
         self.iptr = head_line
 
     def check_end_while(self):
